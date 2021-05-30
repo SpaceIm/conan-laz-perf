@@ -70,6 +70,11 @@ class LazperfConan(ConanFile):
                                   "")
             tools.replace_in_file(install_cmake, "${LAZPERF_SHARED_LIB}", "${LAZPERF_STATIC_LIB}")
 
+        # Fix "non-constant-expression cannot be narrowed" with clang on Linux
+        tools.replace_in_file(os.path.join(self._source_subfolder, "cpp", "lazperf", "vlr.cpp"),
+                              "htole32(1)",
+                              "static_cast<uint8_t>(htole32(1))")
+
     def _configure_cmake(self):
         if self._cmake:
             return self._cmake
