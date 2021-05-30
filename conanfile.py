@@ -1,5 +1,4 @@
 from conans import ConanFile, CMake, tools
-from conans.errors import ConanInvalidConfiguration
 import os
 
 required_conan_version = ">=1.33.0"
@@ -23,7 +22,7 @@ class LazperfConan(ConanFile):
         "fPIC": True,
     }
 
-    exports_sources = ["CMakeLists.txt", "patches/**"]
+    exports_sources = "CMakeLists.txt"
     generators = "cmake"
     _cmake = None
 
@@ -42,14 +41,34 @@ class LazperfConan(ConanFile):
     def validate(self):
         if self.settings.compiler.get_safe("cppstd"):
             tools.check_min_cppstd(self, 11)
-        if not self.options.shared:
-            raise ConanInvalidConfiguration("static not supported yet")
-        if self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") == "libstdc++":
-            raise ConanInvalidConfiguration("clang with libstdc++ not supported yet")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
                   destination=self._source_subfolder, strip_root=True)
+
+    def _patch_sources(self):
+        cpp_cmakelists = os.path.join(self._source_subfolder, "cpp", "CMakeLists.txt")
+        lazperf_cmakelists = os.path.join(self._source_subfolder, "cpp", "lazperf", "CMakeLists.txt")
+        install_cmake = os.path.join(self._source_subfolder, "cmake", "install.cmake")
+
+        # Allow to wrap laz-perf with add_subdirectory()
+        tools.replace_in_file(cpp_cmakelists, "if (NOT CMAKE_PROJECT_NAME STREQUAL \"LAZPERF\")", "if(0)")
+
+        # Do not build examples, benchmarks and tools
+        tools.replace_in_file(cpp_cmakelists, "add_subdirectory(examples)", "")
+        tools.replace_in_file(cpp_cmakelists, "add_subdirectory(benchmarks)", "")
+        tools.replace_in_file(cpp_cmakelists, "add_subdirectory(tools)", "")
+
+        # Build and install either static or shared
+        if self.options.shared:
+            tools.replace_in_file(lazperf_cmakelists,
+                                  "add_library(${LAZPERF_STATIC_LIB} STATIC ${SRCS})\nlazperf_target_compile_settings(${LAZPERF_STATIC_LIB})",
+                                  "")
+        else:
+            tools.replace_in_file(lazperf_cmakelists,
+                                  "add_library(${LAZPERF_SHARED_LIB} SHARED ${SRCS})\n    lazperf_target_compile_settings(${LAZPERF_SHARED_LIB})",
+                                  "")
+            tools.replace_in_file(install_cmake, "${LAZPERF_SHARED_LIB}", "${LAZPERF_STATIC_LIB}")
 
     def _configure_cmake(self):
         if self._cmake:
@@ -60,10 +79,7 @@ class LazperfConan(ConanFile):
         return self._cmake
 
     def build(self):
-        for patch in self.conan_data.get("patches", {}).get(self.version, []):
-            tools.patch(**patch)
-        tools.replace_in_file(os.path.join(self._source_subfolder, "cpp", "CMakeLists.txt"),
-                              "if (NOT CMAKE_PROJECT_NAME STREQUAL \"LAZPERF\")", "if(0)")
+        self._patch_sources()
         cmake = self._configure_cmake()
         cmake.build()
 
