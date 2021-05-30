@@ -22,7 +22,7 @@ class LazperfConan(ConanFile):
         "fPIC": True,
     }
 
-    exports_sources = "CMakeLists.txt"
+    exports_sources = ["CMakeLists.txt", "patches/**"]
     generators = "cmake"
     _cmake = None
 
@@ -47,6 +47,9 @@ class LazperfConan(ConanFile):
                   destination=self._source_subfolder, strip_root=True)
 
     def _patch_sources(self):
+        for patch in self.conan_data.get("patches", {}).get(self.version, []):
+            tools.patch(**patch)
+
         cpp_cmakelists = os.path.join(self._source_subfolder, "cpp", "CMakeLists.txt")
         lazperf_cmakelists = os.path.join(self._source_subfolder, "cpp", "lazperf", "CMakeLists.txt")
         install_cmake = os.path.join(self._source_subfolder, "cmake", "install.cmake")
@@ -69,11 +72,6 @@ class LazperfConan(ConanFile):
                                   "add_library(${LAZPERF_SHARED_LIB} SHARED ${SRCS})\n    lazperf_target_compile_settings(${LAZPERF_SHARED_LIB})",
                                   "")
             tools.replace_in_file(install_cmake, "${LAZPERF_SHARED_LIB}", "${LAZPERF_STATIC_LIB}")
-
-        # Fix "non-constant-expression cannot be narrowed" with clang on Linux
-        tools.replace_in_file(os.path.join(self._source_subfolder, "cpp", "lazperf", "vlr.cpp"),
-                              "htole32(1)",
-                              "1")
 
     def _configure_cmake(self):
         if self._cmake:
