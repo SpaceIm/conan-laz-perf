@@ -40,7 +40,7 @@
 +    add_library(${LAZPERF_STATIC_LIB} STATIC ${SRCS})
 +    lazperf_target_compile_settings(${LAZPERF_STATIC_LIB})
 +    target_include_directories(${LAZPERF_STATIC_LIB} INTERFACE $<INSTALL_INTERFACE:include>)
-+    install(TARGETS ${LAZPERF_STATIC_LIB} EXPORT lazperf-targets LIBRARY DESTINATION lib)
++    install(TARGETS ${LAZPERF_STATIC_LIB} EXPORT lazperf-targets DESTINATION lib)
  endif()
  
 -add_library(${LAZPERF_STATIC_LIB} STATIC ${SRCS})
