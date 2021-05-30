@@ -4,7 +4,9 @@ sources:
     sha256: "0b088e17b7ed96333fc4d791fb78d021e37a63c97fe85dff59b19a0098df6462"
 patches:
   "2.0.0":
-    - patch_file: "patches/0001-fix-narrowing-list-initialization.patch"
+    - patch_file: "patches/0001-fix-cmake.patch"
       base_path: "source_subfolder"
-    - patch_file: "patches/0002-fix-cmake.patch"
+    - patch_file: "patches/0002-fix-narrowing-list-initialization.patch"
+      base_path: "source_subfolder"
+    - patch_file: "patches/0003-missing-include.patch"
       base_path: "source_subfolder"

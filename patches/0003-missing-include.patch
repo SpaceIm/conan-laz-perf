@@ -1,0 +1,11 @@
+--- a/cpp/lazperf/filestream.cpp
++++ b/cpp/lazperf/filestream.cpp
+@@ -1,6 +1,8 @@
+ #include "filestream.hpp"
+ #include "excepts.hpp"
+ 
++#include <algorithm>
++
+ namespace lazperf
+ {
+ 
