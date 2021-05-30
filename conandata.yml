@@ -1,0 +1,8 @@
+sources:
+  "2.0.0":
+    url: "https://github.com/hobu/laz-perf/archive/refs/tags/2.0.0.tar.gz"
+    sha256: "0b088e17b7ed96333fc4d791fb78d021e37a63c97fe85dff59b19a0098df6462"
+# patches:
+#   "2.0.0":
+#     - patch_file: "patches/"
+#       base_path: "source_subfolder"
