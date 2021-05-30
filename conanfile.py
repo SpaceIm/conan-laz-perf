@@ -44,6 +44,8 @@ class LazperfConan(ConanFile):
             tools.check_min_cppstd(self, 11)
         if not self.options.shared:
             raise ConanInvalidConfiguration("static not supported yet")
+        if self.settings.compiler == "clang" and self.settings.compiler.get_safe("libcxx") == "libstdc++":
+            raise ConanInvalidConfiguration("clang with libstdc++ not supported yet")
 
     def source(self):
         tools.get(**self.conan_data["sources"][self.version],
